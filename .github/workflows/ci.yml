@@ -20,14 +20,14 @@ jobs:
         python-version: '3.10'
         cache: 'pip'
 
-    # AQUÍ ESTÁ LA CLAVE: Indícale que entre a la carpeta donde está tu requirements.txt
+    # Cambia esto según las carpetas reales que bajó GitHub (ej: products-api/products-api-min)
     - name: Install dependencies
-      working-directory: ./products-api-min
+      working-directory: ./products-api/products-api-min
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
     - name: Run tests
-      working-directory: ./products-api-min
+      working-directory: ./products-api/products-api-min
       run: |
         python main.py --test
