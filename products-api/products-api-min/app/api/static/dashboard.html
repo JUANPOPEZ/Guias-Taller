@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Open Data Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  body { font-family: sans-serif; max-width: 800px; margin: 20px auto; }
+  table { border-collapse: collapse; margin-bottom: 20px; }
+  td, th { border: 1px solid #ccc; padding: 4px 10px; text-align: left; }
+  .CLOSED { color: green; } .OPEN { color: red; } .HALF_OPEN { color: orange; }
+</style>
+</head>
+<body>
+<h1>Colombian Open Data Dashboard</h1>
+
+<h2>Circuit breakers</h2>
+<table id="breakers"></table>
+
+<h2>TRM statistics – last 30 days (DuckDB query 1)</h2>
+<table id="stats"></table>
+
+<h2>Municipalities per department – top 10 (DuckDB query 2)</h2>
+<canvas id="chart"></canvas>
+<p id="error" style="color:red"></p>
+
+<script>
+async function get(url) {
+  const r = await fetch(url);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.detail);
+  return body;
+}
+async function load() {
+  try {
+    const s = await get("/api/v1/open-data/trm-statistics?days=30");
+    document.getElementById("stats").innerHTML = Object.entries(s)
+      .map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("");
+    const m = (await get("/api/v1/open-data/municipalities")).slice(0, 10);
+    new Chart(document.getElementById("chart"), {
+      type: "bar",
+      data: { labels: m.map(x => x.department),
+              datasets: [{ label: "Municipalities", data: m.map(x => x.municipalities) }] }
+    });
+  } catch (e) { document.getElementById("error").textContent = e.message; }
+  const b = await get("/api/v1/open-data/circuit-breakers");
+  document.getElementById("breakers").innerHTML =
+    "<tr><th>Service</th><th>State</th><th>Failures</th></tr>" +
+    b.map(x => `<tr><td>${x.name}</td><td class="${x.state}">${x.state}</td><td>${x.failures}/${x.threshold}</td></tr>`).join("");
+}
+load();
+</script>
+</body>
+</html>
