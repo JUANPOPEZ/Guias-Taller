@@ -11,24 +11,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Descargar el código del repositorio
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # 2. Configurar la versión de Python (puedes ajustar a 3.10 o la que uses)
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
         cache: 'pip'
 
-    # 3. Instalar las dependencias
+    # AQUÍ ESTÁ LA CLAVE: Indícale que entre a la carpeta donde está tu requirements.txt
     - name: Install dependencies
+      working-directory: ./products-api-min
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # 4. Ejecutar tus pruebas automatizadas
     - name: Run tests
+      working-directory: ./products-api-min
       run: |
         python main.py --test
